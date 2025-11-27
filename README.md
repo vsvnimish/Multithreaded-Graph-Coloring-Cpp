@@ -1,82 +1,110 @@
-# Multithreaded Graph Coloring (C++)
+# 🎨 Multithreaded Graph Coloring (C++)
 
-This project implements multithreaded graph coloring using coarse-grained and fine-grained locks in C++. It explores the effects of thread partitioning, graph connectivity, and locking strategies on performance.
+This project implements **multithreaded graph coloring** using **coarse-grained** and **fine-grained locks** in **C++11**.
+It explores the effects of thread partitioning, graph connectivity, and locking strategies on performance.
 
-Key Features
+---
 
-* Implemented in C++11 using std::thread and semaphores (sem_init, sem_wait, sem_post)
-* Supports adjacency list and adjacency matrix representations
-* Partitioning of vertices for multithreaded coloring
-* Greedy coloring algorithm with coarse-grained and fine-grained locking
-* Performance analysis for graphs with 1000–5000 vertices
-* Evaluates execution time, number of colors, and graph connectivity impact
+## 🔹 Key Features
 
-Algorithm Overview
+* ✅ Multithreaded using `std::thread` and **semaphores** (`sem_init`, `sem_wait`, `sem_post`)
+* ✅ Supports **adjacency list** & **adjacency matrix** representations
+* ✅ Greedy coloring algorithm with:
 
-Common Vertex Coloring Algorithm
+  * **Coarse-grained locking**
+  * **Fine-grained locking**
+* ✅ Graph sizes: 1000–5000 vertices
+* ✅ Analyzes:
 
-1. Initialize a local array available[no_of_vertices] to track usable colors.
-2. For each vertex v, mark colors assigned to neighbors as unavailable.
-3. Assign the first available color to vertex v in the color[no_of_vertices] array.
-4. Colors range from 1 to no_of_vertices in the worst case.
+  * Execution time vs number of threads
+  * Number of colors used
+  * Impact of graph connectivity
 
-Coarse-Grained Locking
+---
 
-1. Each thread receives a partition of vertices.
-2. For each vertex v:
+## 🧩 Algorithm Overview
 
-   * Internal vertex: all neighbors in the same partition → color without lock
-   * External vertex: neighbors in other partitions → acquire a global semaphore lock (mutex) before coloring
-3. Ensures thread safety but may reduce parallelism when few internal vertices exist.
+### Common Vertex Coloring
 
-Fine-Grained Locking
+1. Initialize `available[no_of_vertices]` to track usable colors.
+2. For each vertex `v`, mark neighbors’ colors as unavailable.
+3. Assign the first available color to vertex `v` in `color[no_of_vertices]`.
+4. Worst-case: each vertex gets a unique color (1 to number of vertices).
 
-1. Each thread receives a partition of vertices.
-2. Global array of semaphores: lock[no_of_vertices] initialized to 1
-3. For each vertex v:
+### Coarse-Grained Locking
 
-   * Internal vertex: color directly
-   * External vertex: acquire locks for all neighbors and v itself before coloring, then release all locks
-4. Better safety for concurrent coloring but may suffer high overhead in connected graphs
+1. Each thread gets a **partition of vertices**.
+2. For each vertex `v`:
 
-Performance Analysis
+   * **Internal vertex:** all neighbors in the same partition → color without lock
+   * **External vertex:** neighbors in other partitions → acquire a **global semaphore** (`mutex`) before coloring
+3. Pros: safe and simple
+4. Cons: reduced parallelism if few internal vertices exist
 
-Graph 1: Effect of Internal Vertices
+### Fine-Grained Locking
+
+1. Each thread gets a **partition of vertices**.
+2. Global array of semaphores: `lock[no_of_vertices]` initialized to 1.
+3. For each vertex `v`:
+
+   * **Internal vertex:** color directly
+   * **External vertex:** acquire locks for all neighbors + `v`, color, then release locks
+4. Pros: safe for high concurrency
+5. Cons: high overhead in connected graphs
+
+---
+
+## 📊 Performance Analysis
+
+**Graph 1 – Internal Vertices**
 
 * Few internal vertices → coarse lock may perform worse due to global lock contention
-* Coarse lock performs better than fine-grained lock in highly connected graphs
+* Coarse lock better than fine-grained lock in highly connected graphs
 
-Graph 2: Number of Colors
+**Graph 2 – Number of Colors**
 
-* Number of colors is nearly the same for all methods
-* Thread count does not significantly change color count
+* Colors used are nearly identical across methods
+* Thread count does not significantly affect color assignment
 
-Graph 3: Execution Time vs Threads
+**Graph 3 – Execution Time vs Threads**
 
-* Using threads > CPU cores introduces overhead
-* Coarse and fine-grained locks show fluctuations due to thread management and CPU scheduling
+* Threads > CPU cores → overhead dominates
+* Coarse/fine-grained locks show fluctuations due to CPU scheduling
 
-Graph 4: Thread Count vs Color Assignment
+**Graph 4 – Thread Count vs Colors**
 
-* Increasing threads does not affect the number of colors; only execution time is influenced
+* Increasing threads does **not affect number of colors**, only execution time
 
-Key Observations
+---
 
-1. Coarse-grained locking performs better than fine-grained locking in highly connected graphs
-2. Fine-grained locking introduces higher overhead due to multiple semaphore operations
-3. Proper thread count relative to CPU cores is crucial for performance
-4. Number of colors is consistent; performance differences arise from thread management overhead
+## 💡 Key Observations
 
-Technologies Used
+* Coarse-grained locking outperforms fine-grained in highly connected graphs
+* Fine-grained locking introduces significant semaphore overhead
+* Proper thread count relative to CPU cores is essential
+* Performance differences are due to thread management, not coloring
 
-* C++11 (std::thread, semaphore)
-* Data structures: adjacency list & adjacency matrix
-* Linux (tested on 4-core CPU)
-* Performance tools: timing analysis using chrono
+---
 
-Conclusion
+## 🛠 Technologies Used
 
-* Coarse-grained locking is preferable for highly connected graphs
-* Fine-grained locking introduces significant overhead
-* Thread management and graph structure are key to maximizing performance
-* Number of threads should generally not exceed CPU cores
+* **C++11** (`std::thread`, `semaphore`)
+* **Data Structures:** adjacency list & adjacency matrix
+* **Linux** (tested on 4-core CPU)
+* **Performance Tools:** `chrono` for timing analysis
+
+---
+
+## ⚡ Conclusion
+
+* Prefer **coarse-grained locking** for highly connected graphs
+* Avoid excessive threads; keep ≤ CPU cores
+* Fine-grained locking has higher overhead but ensures strict concurrency
+* Number of colors consistent across methods; execution time varies with locks and threads
+
+---
+
+## 📌 Notes
+
+* Tested for **1000–5000 vertices** (higher may cause segmentation faults)
+* Graph connectivity and partitioning strategy strongly affect performance
