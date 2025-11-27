@@ -95,6 +95,28 @@ It explores the effects of thread partitioning, graph connectivity, and locking 
 
 ---
 
+## 🏃 How to Run
+
+### Coarse-Grained Lock
+
+```bash
+g++ -pthread -lrt GraphColoring_CoarseLock.cpp -o coarse
+./coarse < sample_input.txt > coarse_output.txt
+```
+
+### Fine-Grained Lock
+
+```bash
+g++ -pthread -lrt GraphColoring_FineLock.cpp -o fine
+./fine < sample_input.txt > fine_output.txt
+```
+
+* Replace `sample_input.txt` with your input file
+* Output will be stored in `coarse_output.txt` or `fine_output.txt`
+* Ensure your system supports semaphores (`-lrt`) and has sufficient memory for large graphs
+
+---
+
 ## ⚡ Conclusion
 
 * Prefer **coarse-grained locking** for highly connected graphs
